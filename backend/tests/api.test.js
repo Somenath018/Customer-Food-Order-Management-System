@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 import { httpServer } from '../src/server.js';
 import { io as Client } from 'socket.io-client';
 
@@ -269,6 +270,43 @@ async function runTests() {
     });
     if (usersRes.status !== 200 || driversRes.status !== 200) {
       throw new Error('Admin failed to query user/driver directories');
+    }
+  });
+
+  // 14. Restaurant Login & Business Verification test
+  await test('POST /api/auth/restaurant-login - Restaurant partner login with compliance docs', async () => {
+    const res = await request('/api/auth/restaurant-login', {
+      method: 'POST',
+      body: {
+        restaurant_id: 'rest_01',
+        password: 'password123',
+        remember_me: true,
+        fssai_license_no: '10021022000345',
+        bank_account_no: '987654321012',
+        bank_ifsc: 'HDFC0001234',
+        bank_name: 'HDFC Bank',
+        account_holder: 'Bella Italia Trattoria Pvt Ltd',
+        gstin: '22AAAAA0000A1Z5',
+        pan_number: 'ABCDE1234F'
+      }
+    });
+    if (res.status !== 200 || !res.data.token || !res.data.restaurant) {
+      throw new Error(`Restaurant login failed: ${res.data.message}`);
+    }
+    if (res.data.restaurant.gstin !== '22AAAAA0000A1Z5') {
+      throw new Error('GSTIN document verification mapping failed');
+    }
+  });
+
+  // 15. Restaurant Sales & Daily Earnings Analytics test
+  await test('GET /api/restaurants/:id/analytics - Fetch daily earnings & weekly sales breakdown', async () => {
+    const res = await request('/api/restaurants/rest_01/analytics');
+    if (res.status !== 200 || !res.data.analytics) {
+      throw new Error(`Analytics endpoint failed: ${res.data.message}`);
+    }
+    const { weeklySales, todayEarnings } = res.data.analytics;
+    if (!Array.isArray(weeklySales) || weeklySales.length !== 7) {
+      throw new Error('Weekly sales should return 7-day breakdown array');
     }
   });
 

@@ -104,3 +104,73 @@ export const toggleOpenStatus = (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getRestaurantAnalytics = (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = store.getRestaurantById(id);
+
+    if (!restaurant) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+
+    const analytics = store.getRestaurantAnalytics(id);
+    res.json({
+      success: true,
+      restaurantId: id,
+      analytics
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateVerificationDetails = (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = store.getRestaurantById(id);
+
+    if (!restaurant) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    }
+
+    const {
+      fssai_license_no,
+      fssai_doc_name,
+      fssai_doc_url,
+      bank_account_no,
+      bank_ifsc,
+      bank_name,
+      account_holder,
+      gstin,
+      pan_number,
+      pan_doc_name,
+      pan_doc_url
+    } = req.body;
+
+    const updates = {
+      fssai_license_no: fssai_license_no || restaurant.fssai_license_no,
+      fssai_doc_name: fssai_doc_name || restaurant.fssai_doc_name,
+      fssai_doc_url: fssai_doc_url || restaurant.fssai_doc_url,
+      bank_account_no: bank_account_no || restaurant.bank_account_no,
+      bank_ifsc: bank_ifsc || restaurant.bank_ifsc,
+      bank_name: bank_name || restaurant.bank_name,
+      account_holder: account_holder || restaurant.account_holder,
+      gstin: gstin || restaurant.gstin,
+      pan_number: pan_number || restaurant.pan_number,
+      pan_doc_name: pan_doc_name || restaurant.pan_doc_name,
+      pan_doc_url: pan_doc_url || restaurant.pan_doc_url,
+      is_verified: true
+    };
+
+    const updated = store.updateRestaurant(id, updates);
+
+    res.json({
+      success: true,
+      message: 'Business verification credentials updated successfully.',
+      restaurant: updated
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node tests/api.test.js",
+    "test": "node --eval \"process.env.NODE_ENV='test'; import('./tests/api.test.js');\"",
     "seed": "node src/config/seedRunner.js"
   },
   "dependencies": {
