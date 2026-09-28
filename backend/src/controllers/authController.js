@@ -82,70 +82,18 @@ export const getMe = (req, res) => {
   });
 };
 
-export const restaurantLogin = (req, res) => {
+export const updateMe = (req, res) => {
   try {
-    const {
-      restaurant_id,
-      email,
-      password,
-      remember_me = false,
-      fssai_license_no,
-      fssai_doc_name,
-      bank_account_no,
-      bank_ifsc,
-      bank_name,
-      account_holder,
-      gstin,
-      pan_number,
-      pan_doc_name
-    } = req.body;
-
-    let targetRest = null;
-    if (restaurant_id) {
-      targetRest = store.restaurants.find(
-        (r) => r.id === restaurant_id || r.restaurant_id === restaurant_id
-      );
+    const userId = req.user.id;
+    const { name, phone, address, avatar_url, vehicle_type } = req.body;
+    const updatedUser = store.updateUser(userId, { name, phone, address, avatar_url, vehicle_type });
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
     }
-
-    if (!targetRest && email) {
-      const user = store.findUserByEmail(email);
-      if (user) {
-        targetRest = store.getRestaurantByOwnerId(user.id);
-      }
-    }
-
-    // Default fallback to first demo restaurant if testing
-    if (!targetRest) {
-      targetRest = store.restaurants[0];
-    }
-
-    // Update compliance credentials if provided
-    const complianceUpdates = {};
-    if (fssai_license_no) complianceUpdates.fssai_license_no = fssai_license_no;
-    if (fssai_doc_name) complianceUpdates.fssai_doc_name = fssai_doc_name;
-    if (bank_account_no) complianceUpdates.bank_account_no = bank_account_no;
-    if (bank_ifsc) complianceUpdates.bank_ifsc = bank_ifsc;
-    if (bank_name) complianceUpdates.bank_name = bank_name;
-    if (account_holder) complianceUpdates.account_holder = account_holder;
-    if (gstin) complianceUpdates.gstin = gstin;
-    if (pan_number) complianceUpdates.pan_number = pan_number;
-    if (pan_doc_name) complianceUpdates.pan_doc_name = pan_doc_name;
-    complianceUpdates.is_verified = true;
-
-    store.updateRestaurant(targetRest.id, complianceUpdates);
-    const updatedRest = store.getRestaurantById(targetRest.id);
-
-    const ownerUser = store.findUserById(updatedRest.owner_id) || store.users.find(u => u.role === 'restaurant');
-    const token = generateToken(ownerUser);
-    const { password_hash: _, ...safeUser } = ownerUser;
-
     res.json({
       success: true,
-      message: `Authenticated restaurant partner: ${updatedRest.name}`,
-      token,
-      remember_me: Boolean(remember_me),
-      user: safeUser,
-      restaurant: updatedRest
+      message: 'Profile updated successfully.',
+      user: updatedUser
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -168,4 +116,45 @@ export const getDemoUsers = (req, res) => {
     success: true,
     demoUsers
   });
+};
+
+export const restaurantLogin = (req, res) => {
+  try {
+    const { restaurantId, pin } = req.body;
+    if (!restaurantId || !pin) {
+      return res.status(400).json({ success: false, message: 'Restaurant ID and owner PIN or password are required.' });
+    }
+
+    const authResult = store.findRestaurantByPinOrPassword(restaurantId, pin);
+    if (!authResult) {
+      return res.status(401).json({ success: false, message: 'Invalid owner/manager PIN or password for this restaurant.' });
+    }
+
+    const { restaurant, owner } = authResult;
+    const sessionUser = {
+      ...owner,
+      role: 'restaurant',
+      restaurant_id: restaurant.id,
+      restaurant_name: restaurant.name
+    };
+
+    const token = generateToken(sessionUser);
+    const { password_hash: _, ...safeUser } = sessionUser;
+
+    res.json({
+      success: true,
+      message: `Authenticated as ${restaurant.name} Partner`,
+      token,
+      user: safeUser,
+      restaurant: {
+        id: restaurant.id,
+        name: restaurant.name,
+        cuisine: restaurant.cuisine,
+        image_url: restaurant.image_url,
+        address: restaurant.address
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };

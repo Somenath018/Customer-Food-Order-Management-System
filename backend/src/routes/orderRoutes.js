@@ -3,7 +3,8 @@ import {
   createOrder,
   getOrders,
   getOrderById,
-  updateOrderStatus
+  updateOrderStatus,
+  addFeedback
 } from '../controllers/orderController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 
@@ -13,5 +14,6 @@ router.post('/', authenticate, createOrder);
 router.get('/', authenticate, getOrders);
 router.get('/:id', authenticate, getOrderById);
 router.patch('/:id/status', authenticate, updateOrderStatus);
+router.post('/:id/feedback', authenticate, addFeedback);
 
 export default router;

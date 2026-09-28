@@ -1,0 +1,23 @@
+{
+  "name": "customer-food-order-management-system",
+  "version": "1.0.0",
+  "description": "Full-stack Customer Food Order Management System with Central Backend and Portals",
+  "private": true,
+  "scripts": {
+    "start:backend": "npm --prefix backend start",
+    "dev:backend": "npm --prefix backend run dev",
+    "test:backend": "npm --prefix backend test",
+    "start:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build"
+  },
+  "keywords": [
+    "food-delivery",
+    "react",
+    "express",
+    "socketio",
+    "leaflet",
+    "foodie"
+  ],
+  "author": "",
+  "license": "ISC"
+}

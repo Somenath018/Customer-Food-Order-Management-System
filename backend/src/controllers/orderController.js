@@ -15,6 +15,13 @@ export const createOrder = (req, res) => {
       upi_id
     } = req.body;
 
+    if (req.user && req.user.is_restricted) {
+      return res.status(403).json({
+        success: false,
+        message: 'Your customer account is currently restricted by platform administration. You cannot place orders.'
+      });
+    }
+
     if (!restaurant_id || !items || !items.length || !delivery_address) {
       return res.status(400).json({
         success: false,
@@ -163,6 +170,30 @@ export const updateOrderStatus = (req, res) => {
       success: true,
       message: `Order status updated to ${status}.`,
       order: updatedOrder
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const addFeedback = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+
+    if (!rating) {
+      return res.status(400).json({ success: false, message: 'Rating (1-5) is required.' });
+    }
+
+    const order = store.addOrderFeedback(id, { rating, comment });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Feedback submitted successfully! Thank you.',
+      order
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

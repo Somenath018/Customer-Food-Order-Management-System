@@ -12,46 +12,33 @@ export const getAdminOverview = (req, res) => {
   }
 };
 
-export const listAllUsers = (req, res) => {
+export const listAllCustomers = (req, res) => {
   try {
-    const users = store.getAllUsers();
+    const customers = store.getCustomers();
     res.json({
       success: true,
-      count: users.length,
-      users
+      count: customers.length,
+      customers,
+      users: customers // alias for backwards compatibility
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const listAllRestaurantsAdmin = (req, res) => {
-  try {
-    const restaurants = store.restaurants;
-    res.json({
-      success: true,
-      count: restaurants.length,
-      restaurants
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const toggleRestaurantApproval = (req, res) => {
+export const toggleCustomerRestriction = (req, res) => {
   try {
     const { id } = req.params;
-    const restaurant = store.getRestaurantById(id);
+    const updatedCustomer = store.toggleCustomerRestriction(id);
 
-    if (!restaurant) {
-      return res.status(404).json({ success: false, message: 'Restaurant not found.' });
+    if (!updatedCustomer) {
+      return res.status(404).json({ success: false, message: 'Customer account not found.' });
     }
 
-    const updated = store.updateRestaurant(id, { is_approved: !restaurant.is_approved });
     res.json({
       success: true,
-      message: `Restaurant approval status: ${updated.is_approved ? 'APPROVED' : 'SUSPENDED'}`,
-      restaurant: updated
+      message: `Customer account is now ${updatedCustomer.is_restricted ? 'RESTRICTED' : 'ACTIVE'}.`,
+      customer: updatedCustomer
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -65,6 +52,40 @@ export const listAllDriversAdmin = (req, res) => {
       success: true,
       count: drivers.length,
       drivers
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const addDeliveryPartnerAdmin = (req, res) => {
+  try {
+    const { name, email, password, phone, vehicle_type } = req.body;
+    const result = store.addDriver({ name, email, password, phone, vehicle_type });
+
+    res.status(201).json({
+      success: true,
+      message: 'Delivery partner registered successfully.',
+      driver: result.driver,
+      user: result.user
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteDeliveryPartnerAdmin = (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = store.deleteDriver(id);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Delivery partner not found.' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Delivery partner deleted successfully.'
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
