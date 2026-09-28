@@ -64,7 +64,21 @@ export const initialRestaurants = [
     is_open: true,
     is_approved: true,
     lat: 40.7192,
-    lng: -73.9972
+    lng: -73.9972,
+    // Compliance & Business Credentials Verification
+    restaurant_id: 'rest_01',
+    fssai_license_no: '10021022000345',
+    fssai_doc_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=80',
+    fssai_doc_name: 'FSSAI_License_Cert_2026.pdf',
+    bank_account_no: '987654321012',
+    bank_ifsc: 'HDFC0001234',
+    bank_name: 'HDFC Bank',
+    account_holder: 'Bella Italia Trattoria Pvt Ltd',
+    gstin: '22AAAAA0000A1Z5',
+    pan_number: 'ABCDE1234F',
+    pan_doc_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop&q=80',
+    pan_doc_name: 'PAN_Card_Copy.pdf',
+    is_verified: true
   },
   {
     id: 'rest_02',
@@ -312,6 +326,10 @@ export const initialMenuItems = [
   }
 ];
 
+const nowMs = Date.now();
+const hourMs = 3600000;
+const dayMs = 24 * hourMs;
+
 export const initialOrders = [
   {
     id: 'ord_1001',
@@ -331,22 +349,8 @@ export const initialOrders = [
     driver_id: 'user_driver_01',
     driver_name: 'Alex Rivera',
     items: [
-      {
-        id: 'item_ord_1',
-        menu_item_id: 'menu_01_01',
-        name: 'Margherita D.O.P. Pizza',
-        price: 16.50,
-        quantity: 1,
-        special_notes: 'Extra crispy crust'
-      },
-      {
-        id: 'item_ord_2',
-        menu_item_id: 'menu_01_02',
-        name: 'Truffle & Wild Mushroom Fettuccine',
-        price: 21.00,
-        quantity: 1,
-        special_notes: ''
-      }
+      { id: 'item_ord_1', menu_item_id: 'menu_01_01', name: 'Margherita D.O.P. Pizza', price: 16.50, quantity: 1, special_notes: 'Extra crispy crust' },
+      { id: 'item_ord_2', menu_item_id: 'menu_01_02', name: 'Truffle & Wild Mushroom Fettuccine', price: 21.00, quantity: 1, special_notes: '' }
     ],
     payment: {
       id: 'pay_1001',
@@ -355,19 +359,190 @@ export const initialOrders = [
       payment_status: 'paid',
       amount: 43.49,
       card_last4: '4242',
-      paid_at: new Date(Date.now() - 15 * 60000).toISOString()
+      paid_at: new Date(nowMs - 15 * 60000).toISOString()
     },
-    delivery: {
-      id: 'del_1001',
-      delivery_status: 'accepted',
-      current_lat: 40.7180,
-      current_lng: -73.9950,
-      estimated_arrival_mins: 18,
-      assigned_at: new Date(Date.now() - 10 * 60000).toISOString()
-    },
-    placed_at: new Date(Date.now() - 20 * 60000).toISOString(),
-    confirmed_at: new Date(Date.now() - 18 * 60000).toISOString(),
-    preparing_at: new Date(Date.now() - 15 * 60000).toISOString()
+    delivery: { id: 'del_1001', delivery_status: 'accepted', current_lat: 40.7180, current_lng: -73.9950, estimated_arrival_mins: 18, assigned_at: new Date(nowMs - 10 * 60000).toISOString() },
+    placed_at: new Date(nowMs - 20 * 60000).toISOString(),
+    confirmed_at: new Date(nowMs - 18 * 60000).toISOString(),
+    preparing_at: new Date(nowMs - 15 * 60000).toISOString()
+  },
+  {
+    id: 'ord_1002',
+    customer_id: 'user_customer_01',
+    customer_name: 'David Miller',
+    customer_phone: '+1 (555) 321-9988',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 55.50,
+    delivery_fee: 2.99,
+    tax: 4.44,
+    discount: 5.00,
+    total: 57.93,
+    delivery_address: '15 West End Ave, NY',
+    driver_id: 'user_driver_01',
+    driver_name: 'Alex Rivera',
+    items: [
+      { id: 'item_ord_3', menu_item_id: 'menu_01_01', name: 'Margherita D.O.P. Pizza', price: 16.50, quantity: 2 },
+      { id: 'item_ord_4', menu_item_id: 'menu_01_03', name: 'Classic Prosciutto & Arugula Pizza', price: 19.50, quantity: 1 },
+      { id: 'item_ord_5', menu_item_id: 'menu_01_04', name: 'Handcrafted Tiramisu Classico', price: 9.00, quantity: 1 }
+    ],
+    payment: { id: 'pay_1002', transaction_id: 'TXN_UPI_994821', payment_method: 'upi', upi_id: 'david@okicici', payment_status: 'paid', amount: 57.93, paid_at: new Date(nowMs - 2 * hourMs).toISOString() },
+    placed_at: new Date(nowMs - 2.5 * hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 2 * hourMs).toISOString()
+  },
+  {
+    id: 'ord_1003',
+    customer_id: 'user_customer_01',
+    customer_name: 'Emily Watson',
+    customer_phone: '+1 (555) 654-3210',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 40.50,
+    delivery_fee: 2.99,
+    tax: 3.24,
+    discount: 0.00,
+    total: 46.73,
+    delivery_address: '350 5th Ave, NY',
+    items: [
+      { id: 'item_ord_6', menu_item_id: 'menu_01_02', name: 'Truffle & Wild Mushroom Fettuccine', price: 21.00, quantity: 1 },
+      { id: 'item_ord_7', menu_item_id: 'menu_01_03', name: 'Classic Prosciutto & Arugula Pizza', price: 19.50, quantity: 1 }
+    ],
+    payment: { id: 'pay_1003', transaction_id: 'TXN_CARD_448102', payment_method: 'card', card_last4: '8812', payment_status: 'paid', amount: 46.73, paid_at: new Date(nowMs - 5 * hourMs).toISOString() },
+    placed_at: new Date(nowMs - 5.5 * hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 5 * hourMs).toISOString()
+  },
+  {
+    id: 'ord_1004',
+    customer_id: 'user_customer_01',
+    customer_name: 'Michael Chang',
+    customer_phone: '+1 (555) 888-7766',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 66.00,
+    delivery_fee: 2.99,
+    tax: 5.28,
+    discount: 0.00,
+    total: 74.27,
+    delivery_address: '88 Greenwich St, NY',
+    items: [
+      { id: 'item_ord_8', menu_item_id: 'menu_01_01', name: 'Margherita D.O.P. Pizza', price: 16.50, quantity: 2 },
+      { id: 'item_ord_9', menu_item_id: 'menu_01_02', name: 'Truffle & Wild Mushroom Fettuccine', price: 21.00, quantity: 1 },
+      { id: 'item_ord_10', menu_item_id: 'menu_01_04', name: 'Handcrafted Tiramisu Classico', price: 9.00, quantity: 1 }
+    ],
+    payment: { id: 'pay_1004', transaction_id: 'TXN_NET_332194', payment_method: 'netbanking', payment_status: 'paid', amount: 74.27, paid_at: new Date(nowMs - 1 * dayMs).toISOString() },
+    placed_at: new Date(nowMs - 1 * dayMs - hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 1 * dayMs).toISOString()
+  },
+  {
+    id: 'ord_1005',
+    customer_id: 'user_customer_01',
+    customer_name: 'Sophia Martinez',
+    customer_phone: '+1 (555) 444-3322',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 49.50,
+    delivery_fee: 2.99,
+    tax: 3.96,
+    discount: 0.00,
+    total: 56.45,
+    delivery_address: '104 Hudson St, NY',
+    items: [
+      { id: 'item_ord_11', menu_item_id: 'menu_01_01', name: 'Margherita D.O.P. Pizza', price: 16.50, quantity: 3 }
+    ],
+    payment: { id: 'pay_1005', transaction_id: 'TXN_UPI_771920', payment_method: 'upi', upi_id: 'sophia@ybl', payment_status: 'paid', amount: 56.45, paid_at: new Date(nowMs - 2 * dayMs).toISOString() },
+    placed_at: new Date(nowMs - 2 * dayMs - 2 * hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 2 * dayMs).toISOString()
+  },
+  {
+    id: 'ord_1006',
+    customer_id: 'user_customer_01',
+    customer_name: 'Robert Taylor',
+    customer_phone: '+1 (555) 777-1122',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 84.00,
+    delivery_fee: 2.99,
+    tax: 6.72,
+    discount: 10.00,
+    total: 83.71,
+    delivery_address: '42 Wall Street, NY',
+    items: [
+      { id: 'item_ord_12', menu_item_id: 'menu_01_02', name: 'Truffle & Wild Mushroom Fettuccine', price: 21.00, quantity: 4 }
+    ],
+    payment: { id: 'pay_1006', transaction_id: 'TXN_CARD_102938', payment_method: 'card', card_last4: '1109', payment_status: 'paid', amount: 83.71, paid_at: new Date(nowMs - 3 * dayMs).toISOString() },
+    placed_at: new Date(nowMs - 3 * dayMs - hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 3 * dayMs).toISOString()
+  },
+  {
+    id: 'ord_1007',
+    customer_id: 'user_customer_01',
+    customer_name: 'Jessica Brown',
+    customer_phone: '+1 (555) 222-3344',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 39.00,
+    delivery_fee: 2.99,
+    tax: 3.12,
+    discount: 0.00,
+    total: 45.11,
+    delivery_address: '50 Broad St, NY',
+    items: [
+      { id: 'item_ord_13', menu_item_id: 'menu_01_03', name: 'Classic Prosciutto & Arugula Pizza', price: 19.50, quantity: 2 }
+    ],
+    payment: { id: 'pay_1007', transaction_id: 'TXN_COD_552190', payment_method: 'cod', payment_status: 'paid', amount: 45.11, paid_at: new Date(nowMs - 4 * dayMs).toISOString() },
+    placed_at: new Date(nowMs - 4 * dayMs - 3 * hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 4 * dayMs).toISOString()
+  },
+  {
+    id: 'ord_1008',
+    customer_id: 'user_customer_01',
+    customer_name: 'Christopher Lee',
+    customer_phone: '+1 (555) 999-0011',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 61.50,
+    delivery_fee: 2.99,
+    tax: 4.92,
+    discount: 0.00,
+    total: 69.41,
+    delivery_address: '120 Broadway, NY',
+    items: [
+      { id: 'item_ord_14', menu_item_id: 'menu_01_01', name: 'Margherita D.O.P. Pizza', price: 16.50, quantity: 2 },
+      { id: 'item_ord_15', menu_item_id: 'menu_01_02', name: 'Truffle & Wild Mushroom Fettuccine', price: 21.00, quantity: 1 },
+      { id: 'item_ord_16', menu_item_id: 'menu_01_04', name: 'Handcrafted Tiramisu Classico', price: 9.00, quantity: 1 }
+    ],
+    payment: { id: 'pay_1008', transaction_id: 'TXN_UPI_661928', payment_method: 'upi', upi_id: 'chris@paytm', payment_status: 'paid', amount: 69.41, paid_at: new Date(nowMs - 5 * dayMs).toISOString() },
+    placed_at: new Date(nowMs - 5 * dayMs - 2 * hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 5 * dayMs).toISOString()
+  },
+  {
+    id: 'ord_1009',
+    customer_id: 'user_customer_01',
+    customer_name: 'Amanda Wilson',
+    customer_phone: '+1 (555) 333-6655',
+    restaurant_id: 'rest_01',
+    restaurant_name: 'Bella Italia Trattoria',
+    status: 'delivered',
+    subtotal: 51.00,
+    delivery_fee: 2.99,
+    tax: 4.08,
+    discount: 0.00,
+    total: 58.07,
+    delivery_address: '200 Park Ave, NY',
+    items: [
+      { id: 'item_ord_17', menu_item_id: 'menu_01_02', name: 'Truffle & Wild Mushroom Fettuccine', price: 21.00, quantity: 2 },
+      { id: 'item_ord_18', menu_item_id: 'menu_01_04', name: 'Handcrafted Tiramisu Classico', price: 9.00, quantity: 1 }
+    ],
+    payment: { id: 'pay_1009', transaction_id: 'TXN_CARD_772183', payment_method: 'card', card_last4: '5519', payment_status: 'paid', amount: 58.07, paid_at: new Date(nowMs - 6 * dayMs).toISOString() },
+    placed_at: new Date(nowMs - 6 * dayMs - 1 * hourMs).toISOString(),
+    delivered_at: new Date(nowMs - 6 * dayMs).toISOString()
   }
 ];
 

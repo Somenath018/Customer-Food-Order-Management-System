@@ -79,7 +79,8 @@ class DataStore {
   }
 
   getRestaurantById(id) {
-    return this.restaurants.find(r => r.id === id) || null;
+    if (!id) return null;
+    return this.restaurants.find(r => r.id === id || r.restaurant_id === id) || null;
   }
 
   getRestaurantByOwnerId(ownerId) {
@@ -111,10 +112,129 @@ class DataStore {
   }
 
   updateRestaurant(id, updates) {
-    const idx = this.restaurants.findIndex(r => r.id === id);
+    const idx = this.restaurants.findIndex(r => r.id === id || r.restaurant_id === id);
     if (idx === -1) return null;
     this.restaurants[idx] = { ...this.restaurants[idx], ...updates };
     return this.restaurants[idx];
+  }
+
+  getRestaurantAnalytics(restaurantId) {
+    const rest = this.getRestaurantById(restaurantId);
+    const targetId = rest ? rest.id : restaurantId;
+
+    const restaurantOrders = this.orders.filter(
+      (o) => (o.restaurant_id === targetId || o.restaurant_id === restaurantId) && o.status !== 'cancelled'
+    );
+
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+
+    const todayOrders = restaurantOrders.filter((o) => {
+      const orderDate = new Date(o.placed_at || o.delivered_at || Date.now()).toISOString().slice(0, 10);
+      return orderDate === todayStr;
+    });
+
+    const todayEarnings = todayOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+    const todayOrdersCount = todayOrders.length;
+    const averageOrderValue = todayOrdersCount > 0 ? todayEarnings / todayOrdersCount : 42.50;
+
+    const weeklySales = [];
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayName = daysOfWeek[d.getDay()];
+
+      const dayOrders = restaurantOrders.filter((o) => {
+        const oDate = new Date(o.placed_at || o.delivered_at || Date.now()).toISOString().slice(0, 10);
+        return oDate === dateStr;
+      });
+
+      const dayTotal = dayOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      weeklySales.push({
+        day: dayName,
+        date: dateStr,
+        sales: Number(dayTotal.toFixed(2)),
+        orders: dayOrders.length
+      });
+    }
+
+    const totalWeeklySales = weeklySales.reduce((sum, w) => sum + w.sales, 0);
+    const totalWeeklyOrders = weeklySales.reduce((sum, w) => sum + w.orders, 0);
+
+    const paymentMethods = { upi: 0, card: 0, netbanking: 0, cod: 0 };
+    restaurantOrders.forEach((o) => {
+      const method = o.payment?.payment_method || 'card';
+      if (paymentMethods[method] !== undefined) {
+        paymentMethods[method] += Number(o.total || 0);
+      }
+    });
+
+    const hourlyLabels = ['8am-11am', '11am-2pm', '2pm-5pm', '5pm-8pm', '8pm-11pm'];
+    const hourlyStats = hourlyLabels.map((label, idx) => {
+      let windowSales = 0;
+      todayOrders.forEach((o) => {
+        const hour = new Date(o.placed_at || Date.now()).getHours();
+        if (idx === 0 && hour >= 8 && hour < 11) windowSales += Number(o.total || 0);
+        if (idx === 1 && hour >= 11 && hour < 14) windowSales += Number(o.total || 0);
+        if (idx === 2 && hour >= 14 && hour < 17) windowSales += Number(o.total || 0);
+        if (idx === 3 && hour >= 17 && hour < 20) windowSales += Number(o.total || 0);
+        if (idx === 4 && hour >= 20) windowSales += Number(o.total || 0);
+      });
+      return { slot: label, earnings: Number(windowSales.toFixed(2)) };
+    });
+
+    const itemMap = {};
+    restaurantOrders.forEach((o) => {
+      (o.items || []).forEach((item) => {
+        if (!itemMap[item.name]) {
+          itemMap[item.name] = { name: item.name, quantity: 0, revenue: 0 };
+        }
+        itemMap[item.name].quantity += Number(item.quantity || 1);
+        itemMap[item.name].revenue += Number(item.price || 0) * Number(item.quantity || 1);
+      });
+    });
+
+    const topSellingItems = Object.values(itemMap)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5)
+      .map((item) => ({ ...item, revenue: Number(item.revenue.toFixed(2)) }));
+
+    const recentTransactions = restaurantOrders.slice(0, 10).map((o) => {
+      const gross = Number(o.total || 0);
+      const platformFee = Number((gross * 0.10).toFixed(2));
+      const netPayout = Number((gross - platformFee).toFixed(2));
+      return {
+        orderId: o.id,
+        customerName: o.customer_name || 'Customer',
+        timestamp: o.placed_at || o.delivered_at,
+        grossAmount: gross,
+        platformFee,
+        netPayout,
+        paymentMethod: o.payment?.payment_method || 'card',
+        status: o.payment?.payment_status === 'paid' ? 'Settled' : 'Pending'
+      };
+    });
+
+    return {
+      todayEarnings: Number(todayEarnings.toFixed(2)),
+      todayOrdersCount,
+      averageOrderValue: Number(averageOrderValue.toFixed(2)),
+      totalWeeklySales: Number(totalWeeklySales.toFixed(2)),
+      totalWeeklyOrders,
+      weeklySales,
+      paymentMethods: {
+        upi: Number(paymentMethods.upi.toFixed(2)),
+        card: Number(paymentMethods.card.toFixed(2)),
+        netbanking: Number(paymentMethods.netbanking.toFixed(2)),
+        cod: Number(paymentMethods.cod.toFixed(2))
+      },
+      hourlyStats,
+      topSellingItems,
+      recentTransactions
+    };
   }
 
   deleteRestaurant(id) {
@@ -127,7 +247,14 @@ class DataStore {
 
   // --- Menu Items ---
   getMenuByRestaurantId(restaurantId, onlyAvailable = false) {
-    let items = this.menuItems.filter(m => m.restaurant_id === restaurantId);
+    if (!restaurantId) return [];
+    const rest = this.getRestaurantById(restaurantId);
+    const validIds = new Set([restaurantId]);
+    if (rest) {
+      if (rest.id) validIds.add(rest.id);
+      if (rest.restaurant_id) validIds.add(rest.restaurant_id);
+    }
+    let items = this.menuItems.filter(m => validIds.has(m.restaurant_id));
     if (onlyAvailable) {
       items = items.filter(m => m.is_available);
     }

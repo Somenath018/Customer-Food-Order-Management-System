@@ -61,7 +61,7 @@ app.use(globalErrorHandler);
 
 // Server Listen
 const PORT = config.port;
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !httpServer.listening) {
   httpServer.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`🚀 Central Backend Server running on http://localhost:${PORT}`);
