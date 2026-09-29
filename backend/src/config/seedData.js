@@ -142,7 +142,7 @@ export const initialUsers = [
   // 4. 4 Existing Delivery Partners
   {
     id: 'user_driver_01',
-    name: 'Alex Rivera',
+    name: 'Arjun Kumar',
     email: 'driver@foodsystem.com',
     password_hash: DEFAULT_PASSWORD_HASH,
     role: 'driver',
@@ -942,7 +942,7 @@ export const initialOrders = [
     delivery_address: '742 Evergreen Terrace, Apt 4B, Koramangala',
     special_instructions: 'Please provide extra salan and raita.',
     driver_id: 'user_driver_01',
-    driver_name: 'Alex Rivera',
+    driver_name: 'Arjun Kumar',
     items: [
       {
         id: 'item_ord_1',
@@ -987,7 +987,7 @@ export const initialOrders = [
 export const initialDrivers = [
   {
     id: 'user_driver_01',
-    name: 'Alex Rivera',
+    name: 'Arjun Kumar',
     phone: '+91 98765 00001',
     vehicle_type: 'E-Scooter / Bike',
     is_online: true,
